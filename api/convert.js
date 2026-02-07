@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: '请输入内容' });
     }
     
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENAI_KEY;
     if (!apiKey) {
       return res.status(500).json({ error: '服务器配置错误' });
     }
