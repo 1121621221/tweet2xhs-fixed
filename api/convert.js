@@ -42,10 +42,18 @@ export default async function handler(req, res) {
       })
     });
     
+    // ============ 修改的关键部分开始 ============
     if (!response.ok) {
-      const error = await response.json();
-      return res.status(500).json({ error: 'AI服务错误' });
+      let errorMessage = 'AI服务错误';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error?.message || JSON.stringify(errorData) || `HTTP ${response.status}`;
+      } catch (e) {
+        errorMessage = `HTTP ${response.status}`;
+      }
+      return res.status(500).json({ error: errorMessage });
     }
+    // ============ 修改的关键部分结束 ============
     
     const data = await response.json();
     const convertedText = data.choices[0]?.message?.content || '转换失败';
