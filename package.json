@@ -1,0 +1,7 @@
+{
+  "name": "tweet2xhs",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
