@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI推文转小红书</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; background: #f0f2f5; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        textarea { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin: 15px 0; min-height: 150px; }
+        button { background: #3b82f6; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .result { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .loading { color: #666; text-align: center; padding: 40px; }
+        .error { background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .success { background: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐦➡️📕 AI推文转小红书</h1>
+        <p>一键将Twitter/微博长文转换成小红书风格文案</p>
+        
+        <textarea id="originalText" placeholder="粘贴你的推文或微博长文..."></textarea>
+        
+        <div style="margin: 15px 0;">
+            <select id="styleSelect" style="padding: 10px; border-radius: 8px; border: 2px solid #ddd;">
+                <option value="trendy">🌟 潮流风格</option>
+                <option value="casual">☕️ 日常分享</option>
+                <option value="professional">💼 专业评测</option>
+            </select>
+            
+            <button onclick="convertText()" id="convertBtn">✨ 一键转换</button>
+        </div>
+        
+        <div class="result" id="result">
+            <h3>📖 生成的小红书文案：</h3>
+            <div id="convertedText">转换结果将显示在这里...</div>
+            <button onclick="copyText()" id="copyBtn" style="display:none; background:#10b981; margin-top:10px;">📋 复制文案</button>
+        </div>
+        
+        <div id="message"></div>
+    </div>
+
+    <script>
+        let freeUses = 3;
+        
+        async function convertText() {
+            const text = document.getElementById('originalText').value.trim();
+            const style = document.getElementById('styleSelect').value;
+            const btn = document.getElementById('convertBtn');
+            
+            if (!text) {
+                showMessage('请输入内容', 'error');
+                return;
+            }
+            
+            if (freeUses <= 0) {
+                showMessage('免费次数已用完', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '🔄 转换中...';
+            document.getElementById('convertedText').innerHTML = '<div class="loading">AI正在生成文案...</div>';
+            document.getElementById('copyBtn').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/convert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, style })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || '转换失败');
+                }
+                
+                document.getElementById('convertedText').innerHTML = formatText(data.convertedText);
+                document.getElementById('copyBtn').style.display = 'block';
+                
+                freeUses--;
+                showMessage(`✅ 转换成功！剩余${freeUses}次`, 'success');
+                
+            } catch (error) {
+                document.getElementById('convertedText').innerHTML = `❌ 错误: ${error.message}`;
+                showMessage(`❌ ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✨ 一键转换';
+            }
+        }
+        
+        function formatText(text) {
+            return text.replace(/\n/g, '<br>').replace(/#(\w+)/g, '<strong>#$1</strong>');
+        }
+        
+        function showMessage(msg, type) {
+            const el = document.getElementById('message');
+            el.innerHTML = `<div class="${type}">${msg}</div>`;
+            setTimeout(() => el.innerHTML = '', 3000);
+        }
+        
+        function copyText() {
+            const text = document.getElementById('convertedText').innerText;
+            navigator.clipboard.writeText(text);
+            showMessage('✅ 已复制到剪贴板', 'success');
+        }
+    </script>
+</body>
+</html>
