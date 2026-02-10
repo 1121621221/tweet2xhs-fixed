@@ -1,113 +1,675 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>AI推文转小红书</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI推文转 - 登录</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; background: #f0f2f5; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        textarea { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin: 15px 0; min-height: 150px; }
-        button { background: #3b82f6; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; }
-        button:hover { background: #2563eb; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .result { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; }
-        .loading { color: #666; text-align: center; padding: 40px; }
-        .error { background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-top: 15px; }
-        .success { background: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-group input.error {
+            border-color: #ef4444;
+        }
+
+        .error-text {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .switch-container {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .switch-container p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .switch-btn {
+            background: none;
+            border: none;
+            color: #4f46e5;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+            margin-left: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .switch-btn:hover {
+            color: #3730a3;
+            text-decoration: underline;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .features {
+            background: #f9fafb;
+            padding: 30px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .features h3 {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .features ul {
+            list-style: none;
+        }
+
+        .features li {
+            font-size: 14px;
+            color: #6b7280;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li::before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .test-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #92400e;
+            display: none;
+        }
+
+        .test-info.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🐦➡️📕 AI推文转小红书</h1>
-        <p>一键将Twitter/微博长文转换成小红书风格文案</p>
-        
-        <textarea id="originalText" placeholder="粘贴你的推文或微博长文..."></textarea>
-        
-        <div style="margin: 15px 0;">
-            <select id="styleSelect" style="padding: 10px; border-radius: 8px; border: 2px solid #ddd;">
-                <option value="trendy">🌟 潮流风格</option>
-                <option value="casual">☕️ 日常分享</option>
-                <option value="professional">💼 专业评测</option>
-            </select>
-            
-            <button onclick="convertText()" id="convertBtn">✨ 一键转换</button>
+        <div class="header">
+            <h1>AI推文转</h1>
+            <p>智能推文转换，助您高效创作</p>
         </div>
-        
-        <div class="result" id="result">
-            <h3>📖 生成的小红书文案：</h3>
-            <div id="convertedText">转换结果将显示在这里...</div>
-            <button onclick="copyText()" id="copyBtn" style="display:none; background:#10b981; margin-top:10px;">📋 复制文案</button>
+
+        <div class="form-container">
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="email">邮箱地址</label>
+                    <input type="email" id="email" placeholder="请输入您的邮箱" required>
+                    <div class="error-text" id="email-error">请输入有效的邮箱地址</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" placeholder="请输入密码（至少6位）" minlength="6" required>
+                    <div class="error-text" id="password-error">密码长度至少6位</div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submit-btn">
+                    登录
+                </button>
+
+                <div class="message" id="message"></div>
+            </form>
+
+            <div class="loading-spinner" id="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+
+            <div class="switch-container">
+                <p id="switch-text">还没有账号？</p>
+                <button class="switch-btn" id="switch-btn">立即注册</button>
+            </div>
         </div>
-        
-        <div id="message"></div>
+
+        <div class="features">
+            <h3>功能特点</h3>
+            <ul>
+                <li>新用户注册赠送5次免费使用额度</li>
+                <li>AI智能推文转换，提升创作效率</li>
+                <li>卡密兑换系统，灵活增加使用次数</li>
+                <li>安全可靠的数据存储与保护</li>
+            </ul>
+        </div>
+
+        <div class="test-info" id="test-info">
+            <strong>测试说明：</strong> 如果这是您首次使用，请先点击"立即注册"按钮创建账号。系统会赠送5次免费试用机会。
+        </div>
     </div>
 
     <script>
-        let freeUses = 3;
-        
-        async function convertText() {
-            const text = document.getElementById('originalText').value.trim();
-            const style = document.getElementById('styleSelect').value;
-            const btn = document.getElementById('convertBtn');
-            
-            if (!text) {
-                showMessage('请输入内容', 'error');
-                return;
+        // ==================== 配置区域 ====================
+        // ⚠️⚠️⚠️ 请替换下面的值 ⚠️⚠️⚠️
+        const SUPABASE_URL = 'https://tulbxlhkbrufkqydvfkc.supabase.co';      // 替换为你的 Supabase URL
+        const SUPABASE_KEY = 'sb_publishable_Hs8GeP31JqRw5YsON_MG5Q_j6I1L6ws'; // 替换为你的 Supabase anon key
+        // ==================== 配置结束 ====================
+
+        // 初始化变量
+        let isLogin = true;
+        let supabase = null;
+
+        // DOM 元素
+        const elements = {
+            email: document.getElementById('email'),
+            password: document.getElementById('password'),
+            submitBtn: document.getElementById('submit-btn'),
+            form: document.getElementById('auth-form'),
+            message: document.getElementById('message'),
+            switchText: document.getElementById('switch-text'),
+            switchBtn: document.getElementById('switch-btn'),
+            loadingSpinner: document.getElementById('loading-spinner'),
+            testInfo: document.getElementById('test-info'),
+            emailError: document.getElementById('email-error'),
+            passwordError: document.getElementById('password-error')
+        };
+
+        // 初始化 Supabase
+        function initSupabase() {
+            if (!SUPABASE_URL || !SUPABASE_KEY) {
+                showMessage('系统配置错误：请先配置 Supabase 连接信息', 'error');
+                elements.submitBtn.disabled = true;
+                return false;
             }
-            
-            if (freeUses <= 0) {
-                showMessage('免费次数已用完', 'error');
-                return;
-            }
-            
-            btn.disabled = true;
-            btn.innerHTML = '🔄 转换中...';
-            document.getElementById('convertedText').innerHTML = '<div class="loading">AI正在生成文案...</div>';
-            document.getElementById('copyBtn').style.display = 'none';
-            
+
             try {
-                const response = await fetch('/api/convert', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text, style })
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                    auth: {
+                        persistSession: true,
+                        autoRefreshToken: true,
+                        detectSessionInUrl: true
+                    }
                 });
+                console.log('Supabase 初始化成功');
+                return true;
+            } catch (error) {
+                showMessage('初始化失败：' + error.message, 'error');
+                return false;
+            }
+        }
+
+        // 切换登录/注册模式
+        function toggleMode() {
+            isLogin = !isLogin;
+            
+            // 更新按钮文本
+            elements.submitBtn.textContent = isLogin ? '登录' : '注册';
+            elements.switchText.textContent = isLogin ? '还没有账号？' : '已有账号？';
+            elements.switchBtn.textContent = isLogin ? '立即注册' : '返回登录';
+            
+            // 清空表单和消息
+            clearErrors();
+            hideMessage();
+            
+            // 显示测试提示
+            if (!isLogin) {
+                elements.testInfo.classList.add('show');
+            } else {
+                elements.testInfo.classList.remove('show');
+            }
+        }
+
+        // 显示消息
+        function showMessage(text, type) {
+            elements.message.textContent = text;
+            elements.message.className = 'message ' + type;
+            elements.message.style.display = 'block';
+        }
+
+        // 隐藏消息
+        function hideMessage() {
+            elements.message.style.display = 'none';
+        }
+
+        // 显示错误
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            document.getElementById(elementId.replace('-error', '')).classList.add('error');
+        }
+
+        // 清除错误
+        function clearErrors() {
+            [elements.emailError, elements.passwordError].forEach(el => {
+                el.style.display = 'none';
+            });
+            [elements.email, elements.password].forEach(el => {
+                el.classList.remove('error');
+            });
+        }
+
+        // 显示加载
+        function showLoading() {
+            elements.loadingSpinner.style.display = 'block';
+            elements.submitBtn.disabled = true;
+        }
+
+        // 隐藏加载
+        function hideLoading() {
+            elements.loadingSpinner.style.display = 'none';
+            elements.submitBtn.disabled = false;
+        }
+
+        // 验证表单
+        function validateForm() {
+            let isValid = true;
+            clearErrors();
+
+            // 验证邮箱
+            const email = elements.email.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                showError('email-error', '请输入邮箱地址');
+                isValid = false;
+            } else if (!emailRegex.test(email)) {
+                showError('email-error', '请输入有效的邮箱地址');
+                isValid = false;
+            }
+
+            // 验证密码
+            const password = elements.password.value;
+            if (!password) {
+                showError('password-error', '请输入密码');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError('password-error', '密码长度至少6位');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // 用户登录
+        async function handleLogin(email, password) {
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+
+                showMessage('登录成功！正在跳转...', 'success');
                 
-                const data = await response.json();
+                // 获取用户信息
+                await fetchUserProfile(data.user.id);
                 
-                if (!response.ok) {
-                    throw new Error(data.error || '转换失败');
+                // 跳转到主页面
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('登录错误:', error);
+                throw error;
+            }
+        }
+
+        // 用户注册
+        async function handleSignUp(email, password) {
+            try {
+                // 1. 注册用户
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        emailRedirectTo: window.location.origin + '/dashboard.html'
+                    }
+                });
+
+                if (authError) throw authError;
+
+                // 2. 创建用户 profile
+                if (authData.user) {
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .upsert({
+                            id: authData.user.id,
+                            email: email,
+                            daily_quota_remaining: 5,
+                            total_quota_purchased: 0,
+                            total_used: 0,
+                            role: 'user',
+                            updated_at: new Date().toISOString()
+                        });
+
+                    if (profileError) {
+                        console.warn('创建用户 profile 时出错:', profileError);
+                        // 继续执行，因为用户已经注册成功
+                    }
+                }
+
+                return authData;
+
+            } catch (error) {
+                console.error('注册错误:', error);
+                throw error;
+            }
+        }
+
+        // 获取用户 profile 信息
+        async function fetchUserProfile(userId) {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                if (error) {
+                    console.warn('获取用户 profile 失败:', error);
                 }
                 
-                document.getElementById('convertedText').innerHTML = formatText(data.convertedText);
-                document.getElementById('copyBtn').style.display = 'block';
-                
-                freeUses--;
-                showMessage(`✅ 转换成功！剩余${freeUses}次`, 'success');
-                
+                return data;
             } catch (error) {
-                document.getElementById('convertedText').innerHTML = `❌ 错误: ${error.message}`;
-                showMessage(`❌ ${error.message}`, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '✨ 一键转换';
+                console.error('获取用户信息错误:', error);
+                return null;
             }
         }
-        
-        function formatText(text) {
-            return text.replace(/\n/g, '<br>').replace(/#(\w+)/g, '<strong>#$1</strong>');
+
+        // 检查当前登录状态
+        async function checkAuthStatus() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    // 如果已经登录，跳转到 dashboard
+                    console.log('用户已登录，跳转到主页面');
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.error('检查登录状态失败:', error);
+            }
         }
-        
-        function showMessage(msg, type) {
-            const el = document.getElementById('message');
-            el.innerHTML = `<div class="${type}">${msg}</div>`;
-            setTimeout(() => el.innerHTML = '', 3000);
+
+        // 表单提交处理
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+
+            const email = elements.email.value.trim();
+            const password = elements.password.value;
+
+            showLoading();
+            hideMessage();
+
+            try {
+                if (isLogin) {
+                    // 登录
+                    await handleLogin(email, password);
+                } else {
+                    // 注册
+                    const result = await handleSignUp(email, password);
+                    
+                    if (result.user) {
+                        if (result.user.identities && result.user.identities.length === 0) {
+                            showMessage('该邮箱已注册，请直接登录', 'error');
+                            toggleMode(); // 切换到登录模式
+                        } else {
+                            showMessage('注册成功！系统已赠送5次免费额度。请登录使用。', 'success');
+                            toggleMode(); // 切换到登录模式
+                            elements.email.value = '';
+                            elements.password.value = '';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('认证错误详情:', error);
+                
+                // 友好的错误提示
+                let errorMessage = error.message;
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = '邮箱或密码错误';
+                } else if (error.message.includes('User already registered')) {
+                    errorMessage = '该邮箱已注册，请直接登录';
+                    toggleMode();
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = '请先检查邮箱确认邮件（已关闭邮箱验证，可直接登录）';
+                } else if (error.message.includes('rate limit')) {
+                    errorMessage = '操作过于频繁，请稍后重试';
+                }
+                
+                showMessage(`操作失败: ${errorMessage}`, 'error');
+            } finally {
+                hideLoading();
+            }
         }
-        
-        function copyText() {
-            const text = document.getElementById('convertedText').innerText;
-            navigator.clipboard.writeText(text);
-            showMessage('✅ 已复制到剪贴板', 'success');
+
+        // 事件监听器
+        function setupEventListeners() {
+            // 表单提交
+            elements.form.addEventListener('submit', handleSubmit);
+            
+            // 切换模式
+            elements.switchBtn.addEventListener('click', toggleMode);
+            
+            // 实时验证输入
+            elements.email.addEventListener('input', () => {
+                elements.email.classList.remove('error');
+                elements.emailError.style.display = 'none';
+            });
+            
+            elements.password.addEventListener('input', () => {
+                elements.password.classList.remove('error');
+                elements.passwordError.style.display = 'none';
+            });
+            
+            // 按 Enter 键切换焦点
+            elements.email.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    elements.password.focus();
+                }
+            });
+            
+            elements.password.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    elements.submitBtn.click();
+                }
+            });
         }
+
+        // 页面初始化
+        async function initPage() {
+            console.log('页面初始化开始...');
+            
+            // 初始化 Supabase
+            if (!initSupabase()) {
+                return;
+            }
+
+            // 检查登录状态
+            await checkAuthStatus();
+            
+            // 设置事件监听器
+            setupEventListeners();
+            
+            // 显示测试提示
+            elements.testInfo.classList.add('show');
+            
+            console.log('页面初始化完成');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+
+        // 全局错误处理
+        window.addEventListener('error', function(event) {
+            console.error('全局错误:', event.error);
+            showMessage('系统发生错误，请刷新页面重试', 'error');
+        });
     </script>
 </body>
 </html>
