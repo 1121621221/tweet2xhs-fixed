@@ -2,15 +2,17 @@
   "name": "tweet2xhs-fixed",
   "version": "1.0.0",
   "description": "AI推文转小红书工具",
-  "type": "module", // ！！！这是最重要的新增项！！！
+  "main": "index.js",
   "scripts": {
-    "dev": "node server.js" // 如果你有本地开发脚本，如果没有可以删除整个scripts块
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    // 根据你的api/convert.js文件，它使用了fetch，在Node 18+是内置的
-    // 所以你可能没有任何依赖，这是一个空对象
+    "@supabase/supabase-js": "^2.39.7"
   },
   "engines": {
-    "node": ">=18" // 建议指定Node版本，确保支持fetch API
+    "node": ">=18.0.0"
   }
 }
