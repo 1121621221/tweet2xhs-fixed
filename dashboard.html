@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI推文转 - 主页面</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .quota-badge {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quota-icon {
+            font-size: 16px;
+        }
+
+        .user-email {
+            font-size: 14px;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        /* 主容器 */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* 欢迎卡片 */
+        .welcome-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+        }
+
+        .welcome-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .welcome-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .quota-display {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 16px 24px;
+            text-align: center;
+        }
+
+        .quota-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .quota-label {
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .quota-warning {
+            color: var(--warning);
+            font-size: 13px;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* 转换区域 */
+        .converter-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-icon {
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+        }
+
+        .textarea {
+            width: 100%;
+            min-height: 180px;
+            padding: 16px;
+            font-size: 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .textarea::placeholder {
+            color: var(--gray-400);
+        }
+
+        .actions-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* 结果区域 */
+        .result-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 32px;
+            display: none;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .result-content {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 120px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* 卡密兑换 */
+        .code-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .code-input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .code-input {
+            flex: 1;
+            padding: 14px 16px;
+            font-size: 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            transition: border-color 0.2s ease;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .code-message {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: none;
+            margin-top: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .code-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .code-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* 加载动画 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 20px 16px;
+            }
+            
+            .welcome-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .code-input-group {
+                flex-direction: column;
+            }
+            
+            .actions-row {
+                flex-direction: column;
+            }
+            
+            .navbar {
+                padding: 0 16px;
+            }
+            
+            .user-info {
+                gap: 12px;
+            }
+            
+            .user-email {
+                display: none;
+            }
+        }
+
+        /* 工具类 */
+        .hidden {
+            display: none !important;
+        }
+
+        .mb-4 {
+            margin-bottom: 16px;
+        }
+
+        .mt-4 {
+            margin-top: 16px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* 提示信息 */
+        .hint {
+            font-size: 13px;
+            color: var(--gray-600);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* 使用历史 */
+        .history-section {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 16px;
+        }
+
+        .history-item {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .history-text {
+            font-size: 14px;
+            color: var(--gray-800);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-icon">🤖</span>
+            <span>AI推文转</span>
+        </div>
+        
+        <div class="user-info">
+            <div class="quota-badge" id="quota-badge">
+                <span class="quota-icon">⚡</span>
+                <span id="quota-count">0</span> 次剩余
+            </div>
+            
+            <div class="user-email" id="user-email">加载中...</div>
+            
+            <button class="btn btn-primary hidden" id="admin-btn" onclick="goToAdmin()">
+                <span>⚙️</span> 管理后台
+            </button>
+            
+            <button class="btn btn-secondary" onclick="logout()">
+                <span>🚪</span> 退出
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="main-container">
+        <!-- 欢迎卡片 -->
+        <div class="welcome-card">
+            <div class="welcome-header">
+                <div>
+                    <h1>欢迎使用 AI 推文转换</h1>
+                    <p style="color: var(--gray-600); margin-top: 8px;">
+                        智能AI技术，一键转换推文格式，提升创作效率
+                    </p>
+                </div>
+                
+                <div class="quota-display">
+                    <div class="quota-number" id="quota-number">0</div>
+                    <div class="quota-label">今日剩余次数</div>
+                    <div class="quota-warning" id="quota-warning">
+                        新用户注册赠送5次免费额度
+                    </div>
+                </div>
+            </div>
+            
+            <div class="actions-row">
+                <button class="btn btn-success" onclick="showHistory()">
+                    <span>📊</span> 查看使用记录
+                </button>
+                <button class="btn btn-primary" onclick="scrollToCode()">
+                    <span>🎫</span> 兑换卡密
+                </button>
+            </div>
+        </div>
+
+        <!-- AI转换区域 -->
+        <div class="converter-section">
+            <h2 class="section-title">
+                <span class="section-icon">✨</span>
+                推文转换
+            </h2>
+            
+            <div class="input-group">
+                <label class="input-label">输入推文内容</label>
+                <textarea 
+                    class="textarea" 
+                    id="input-text" 
+                    placeholder="请输入要转换的推文内容，支持长文本..."
+                    rows="6"
+                ></textarea>
+                <p class="hint">提示：您可以粘贴Twitter链接或直接输入推文内容</p>
+            </div>
+            
+            <div class="actions-row">
+                <button class="btn btn-primary" id="convert-btn" onclick="convertText()">
+                    <span>🚀</span> 开始转换
+                </button>
+                <button class="btn btn-secondary" onclick="clearInput()">
+                    <span>🗑️</span> 清空输入
+                </button>
+            </div>
+        </div>
+
+        <!-- 转换结果区域 -->
+        <div class="result-section" id="result-section">
+            <div class="result-header">
+                <h2 class="section-title">
+                    <span class="section-icon">✅</span>
+                    转换结果
+                </h2>
+                <button class="btn btn-success" onclick="copyResult()">
+                    <span>📋</span> 复制结果
+                </button>
+            </div>
+            
+            <div class="result-content" id="result-content">
+                转换结果将显示在这里...
+            </div>
+            
+            <div class="actions-row mt-4">
+                <button class="btn btn-secondary" onclick="editResult()">
+                    <span>✏️</span> 编辑结果
+                </button>
+                <button class="btn btn-primary" onclick="downloadResult()">
+                    <span>💾</span> 下载文本
+                </button>
+            </div>
+        </div>
+
+        <!-- 卡密兑换区域 -->
+        <div class="code-section" id="code-section">
+            <h2 class="section-title">
+                <span class="section-icon">🎫</span>
+                卡密兑换
+            </h2>
+            
+            <p style="color: var(--gray-600); margin-bottom: 20px;">
+                兑换卡密以增加使用次数，支持10次、50次、100次等多种面额
+            </p>
+            
+            <div class="code-input-group">
+                <input 
+                    type="text" 
+                    class="code-input" 
+                    id="activation-code" 
+                    placeholder="请输入卡密（格式如：T2XHS-XXXX-XXXX）"
+                    maxlength="50"
+                >
+                <button class="btn btn-success" id="redeem-btn" onclick="redeemCode()">
+                    <span>🎁</span> 立即兑换
+                </button>
+            </div>
+            
+            <div class="code-message" id="code-message"></div>
+            
+            <div class="hint">
+                卡密通常在管理后台生成，包含一定的使用次数
+            </div>
+        </div>
+
+        <!-- 使用历史记录 -->
+        <div class="converter-section hidden" id="history-section">
+            <div class="result-header">
+                <h2 class="section-title">
+                    <span class="section-icon">📊</span>
+                    使用记录
+                </h2>
+                <button class="btn btn-secondary" onclick="hideHistory()">
+                    <span>←</span> 返回
+                </button>
+            </div>
+            
+            <div class="history-list" id="history-list">
+                <!-- 历史记录将通过JS动态加载 -->
+                <div class="text-center" style="padding: 40px; color: var(--gray-500);">
+                    正在加载使用记录...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 配置区域 ====================
+        // ⚠️⚠️⚠️ 请替换下面的值 ⚠️⚠️⚠️
+        const SUPABASE_URL = 'https://tulbxlhkbrufkqydvfkc.supabase.co';      // 替换为你的 Supabase URL
+        const SUPABASE_KEY = 'sb_publishable_Hs8GeP31JqRw5YsON_MG5Q_j6I1L6ws'; // 替换为你的 Supabase anon key
+        // ==================== 配置结束 ====================
+
+        // 全局变量
+        let supabase = null;
+        let currentUser = null;
+        let userProfile = null;
+        let apiEndpoint = '/api/converter'; // 你的API端点
+
+        // DOM元素
+        const elements = {
+            // 用户信息
+            quotaBadge: document.getElementById('quota-badge'),
+            quotaCount: document.getElementById('quota-count'),
+            quotaNumber: document.getElementById('quota-number'),
+            quotaWarning: document.getElementById('quota-warning'),
+            userEmail: document.getElementById('user-email'),
+            adminBtn: document.getElementById('admin-btn'),
+            
+            // 转换相关
+            inputText: document.getElementById('input-text'),
+            convertBtn: document.getElementById('convert-btn'),
+            resultSection: document.getElementById('result-section'),
+            resultContent: document.getElementById('result-content'),
+            
+            // 卡密相关
+            activationCode: document.getElementById('activation-code'),
+            redeemBtn: document.getElementById('redeem-btn'),
+            codeMessage: document.getElementById('code-message'),
+            codeSection: document.getElementById('code-section'),
+            
+            // 历史记录
+            historySection: document.getElementById('history-section'),
+            historyList: document.getElementById('history-list'),
+            
+            // 加载遮罩
+            loadingOverlay: document.getElementById('loading-overlay')
+        };
+
+        // 初始化 Supabase
+        function initSupabase() {
+            if (!SUPABASE_URL || !SUPABASE_KEY) {
+                showSystemError('系统配置错误：请先配置 Supabase 连接信息');
+                return false;
+            }
+
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                    auth: {
+                        persistSession: true,
+                        autoRefreshToken: true
+                    }
+                });
+                console.log('Supabase 初始化成功');
+                return true;
+            } catch (error) {
+                showSystemError('初始化失败：' + error.message);
+                return false;
+            }
+        }
+
+        // 显示系统级错误
+        function showSystemError(message) {
+            alert('系统错误：' + message);
+            console.error('系统错误：', message);
+        }
+
+        // 显示加载动画
+        function showLoading() {
+            elements.loadingOverlay.style.display = 'flex';
+        }
+
+        // 隐藏加载动画
+        function hideLoading() {
+            elements.loadingOverlay.style.display = 'none';
+        }
+
+        // 显示消息
+        function showMessage(element, text, type) {
+            element.textContent = text;
+            element.className = 'code-message ' + type;
+            element.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+
+        // 页面初始化
+        async function initPage() {
+            console.log('开始初始化页面...');
+            showLoading();
+
+            // 1. 初始化 Supabase
+            if (!initSupabase()) {
+                hideLoading();
+                return;
+            }
+
+            // 2. 检查登录状态
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                hideLoading();
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = session.user;
+            elements.userEmail.textContent = currentUser.email;
+
+            // 3. 加载用户信息
+            await loadUserProfile();
+
+            // 4. 检查管理员权限
+            checkAdminStatus();
+
+            // 5. 更新UI
+            updateQuotaDisplay();
+
+            hideLoading();
+            console.log('页面初始化完成');
+        }
+
+        // 加载用户信息
+        async function loadUserProfile() {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (error) {
+                    console.error('获取用户信息失败:', error);
+                    
+                    // 如果profile不存在，创建一个
+                    if (error.code === 'PGRST116') {
+                        await createUserProfile();
+                        return loadUserProfile(); // 递归调用
+                    }
+                    return;
+                }
+
+                userProfile = data;
+                console.log('用户信息加载成功:', data);
+
+            } catch (error) {
+                console.error('加载用户信息异常:', error);
+            }
+        }
+
+        // 创建用户profile（如果不存在）
+        async function createUserProfile() {
+            try {
+                const { error } = await supabase
+                    .from('profiles')
+                    .upsert({
+                        id: currentUser.id,
+                        email: currentUser.email,
+                        daily_quota_remaining: 5,
+                        total_quota_purchased: 0,
+                        total_used: 0,
+                        role: 'user',
+                        updated_at: new Date().toISOString()
+                    });
+
+                if (error) throw error;
+                
+                console.log('用户profile创建成功');
+
+            } catch (error) {
+                console.error('创建用户profile失败:', error);
+            }
+        }
+
+        // 检查管理员权限
+        function checkAdminStatus() {
+            if (userProfile && userProfile.role === 'admin') {
+                elements.adminBtn.classList.remove('hidden');
+            }
+        }
+
+        // 更新次数显示
+        function updateQuotaDisplay() {
+            if (!userProfile) return;
+
+            const remaining = userProfile.daily_quota_remaining || 0;
+            
+            elements.quotaCount.textContent = remaining;
+            elements.quotaNumber.textContent = remaining;
+            
+            // 根据次数调整显示样式
+            if (remaining <= 0) {
+                elements.quotaWarning.textContent = '次数已用完，请兑换卡密';
+                elements.quotaWarning.style.color = '#ef4444';
+                elements.quotaBadge.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            } else if (remaining <= 2) {
+                elements.quotaWarning.textContent = '剩余次数较少，建议兑换卡密';
+                elements.quotaWarning.style.color = '#f59e0b';
+            } else {
+                elements.quotaWarning.textContent = '新用户注册赠送5次免费额度';
+                elements.quotaWarning.style.color = '#6b7280';
+            }
+        }
+
+        // 文本转换函数
+        async function convertText() {
+            const inputText = elements.inputText.value.trim();
+            
+            // 验证输入
+            if (!inputText) {
+                alert('请输入要转换的文本内容');
+                return;
+            }
+
+            if (inputText.length < 5) {
+                alert('输入内容太短，请输入至少5个字符');
+                return;
+            }
+
+            // 检查剩余次数
+            if (!userProfile || userProfile.daily_quota_remaining <= 0) {
+                alert('今日免费次数已用完，请兑换卡密增加次数！');
+                scrollToCode();
+                return;
+            }
+
+            showLoading();
+            elements.convertBtn.disabled = true;
+            elements.convertBtn.innerHTML = '<span>⏳</span> 转换中...';
+
+            try {
+                // 1. 获取用户token
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+
+                if (!token) {
+                    throw new Error('用户认证失败，请重新登录');
+                }
+
+                // 2. 调用转换API
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        text: inputText,
+                        user_id: currentUser.id 
+                    })
+                });
+
+                // 3. 处理响应
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `请求失败: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // 4. 显示结果
+                showConversionResult(result.result || '转换成功！');
+                
+                // 5. 更新本地次数显示
+                if (userProfile) {
+                    userProfile.daily_quota_remaining -= 1;
+                    updateQuotaDisplay();
+                }
+
+                // 6. 记录使用日志（后端已经处理）
+                console.log('转换成功，使用记录已保存');
+
+            } catch (error) {
+                console.error('转换失败:', error);
+                
+                // 友好的错误提示
+                let errorMessage = error.message;
+                if (error.message.includes('今日次数已用完')) {
+                    errorMessage = '今日免费次数已用完，请兑换卡密';
+                    scrollToCode();
+                } else if (error.message.includes('认证失败')) {
+                    errorMessage = '登录已过期，请重新登录';
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                }
+                
+                alert('转换失败: ' + errorMessage);
+                
+            } finally {
+                hideLoading();
+                elements.convertBtn.disabled = false;
+                elements.convertBtn.innerHTML = '<span>🚀</span> 开始转换';
+            }
+        }
+
+        // 显示转换结果
+        function showConversionResult(result) {
+            elements.resultContent.textContent = result;
+            elements.resultSection.style.display = 'block';
+            
+            // 滚动到结果区域
+            elements.resultSection.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // 复制结果
+        async function copyResult() {
+            const text = elements.resultContent.textContent;
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                alert('结果已复制到剪贴板！');
+            } catch (error) {
+                console.error('复制失败:', error);
+                alert('复制失败，请手动选择文本复制');
+            }
+        }
+
+        // 下载结果
+        function downloadResult() {
+            const text = elements.resultContent.textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            a.href = url;
+            a.download = `推文转换_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('文件下载开始');
+        }
+
+        // 编辑结果
+        function editResult() {
+            const currentText = elements.resultContent.textContent;
+            const newText = prompt('编辑转换结果:', currentText);
+            
+            if (newText !== null) {
+                elements.resultContent.textContent = newText;
+            }
+        }
+
+        // 卡密兑换
+        async function redeemCode() {
+            const codeInput = elements.activationCode.value.trim().toUpperCase();
+            
+            // 验证输入
+            if (!codeInput) {
+                showMessage(elements.codeMessage, '请输入卡密', 'error');
+                return;
+            }
+
+            if (codeInput.length < 10) {
+                showMessage(elements.codeMessage, '卡密格式不正确', 'error');
+                return;
+            }
+
+            showLoading();
+            elements.redeemBtn.disabled = true;
+            elements.redeemBtn.innerHTML = '<span>⏳</span> 兑换中...';
+
+            try {
+                // 1. 查找卡密
+                const { data: codeData, error: findError } = await supabase
+                    .from('activation_codes')
+                    .select('*')
+                    .eq('code', codeInput)
+                    .eq('is_used', false)
+                    .single();
+
+                if (findError || !codeData) {
+                    throw new Error('卡密无效或已被使用');
+                }
+
+                // 2. 兑换卡密（使用存储过程）
+                const { error: redeemError } = await supabase.rpc('redeem_activation_code', {
+                    p_user_id: currentUser.id,
+                    p_code_id: codeData.id,
+                    p_quota_value: codeData.quota_value
+                });
+
+                if (redeemError) {
+                    throw new Error('兑换失败: ' + redeemError.message);
+                }
+
+                // 3. 更新本地数据
+                userProfile.daily_quota_remaining += codeData.quota_value;
+                userProfile.total_quota_purchased += codeData.quota_value;
+                
+                // 4. 更新显示
+                updateQuotaDisplay();
+                
+                // 5. 显示成功消息
+                showMessage(elements.codeMessage, 
+                    `兑换成功！增加 ${codeData.quota_value} 次使用额度`, 
+                    'success'
+                );
+                
+                // 6. 清空输入框
+                elements.activationCode.value = '';
+
+            } catch (error) {
+                console.error('卡密兑换失败:', error);
+                showMessage(elements.codeMessage, error.message, 'error');
+                
+            } finally {
+                hideLoading();
+                elements.redeemBtn.disabled = false;
+                elements.redeemBtn.innerHTML = '<span>🎁</span> 立即兑换';
+            }
+        }
+
+        // 查看使用记录
+        async function showHistory() {
+            showLoading();
+            
+            try {
+                const { data: logs, error } = await supabase
+                    .from('usage_logs')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('used_at', { ascending: false })
+                    .limit(20);
+
+                if (error) throw error;
+
+                // 显示历史记录区域
+                document.querySelector('.converter-section').classList.add('hidden');
+                document.querySelector('.result-section').classList.add('hidden');
+                elements.codeSection.classList.add('hidden');
+                elements.historySection.classList.remove('hidden');
+
+                // 生成历史记录列表
+                if (!logs || logs.length === 0) {
+                    elements.historyList.innerHTML = `
+                        <div class="text-center" style="padding: 40px; color: var(--gray-500);">
+                            暂无使用记录
+                        </div>
+                    `;
+                } else {
+                    elements.historyList.innerHTML = logs.map(log => `
+                        <div class="history-item">
+                            <div class="history-time">
+                                ${new Date(log.used_at).toLocaleString('zh-CN')}
+                            </div>
+                            <div class="history-text" title="${log.input_text}">
+                                ${log.input_text.substring(0, 100)}${log.input_text.length > 100 ? '...' : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (error) {
+                console.error('加载使用记录失败:', error);
+                elements.historyList.innerHTML = `
+                    <div class="text-center" style="padding: 40px; color: #ef4444;">
+                        加载失败: ${error.message}
+                    </div>
+                `;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 隐藏历史记录
+        function hideHistory() {
+            elements.historySection.classList.add('hidden');
+            document.querySelector('.converter-section').classList.remove('hidden');
+            elements.codeSection.classList.remove('hidden');
+            
+            // 如果有结果显示，也显示出来
+            if (elements.resultContent.textContent.trim()) {
+                elements.resultSection.classList.remove('hidden');
+            }
+        }
+
+        // 清空输入
+        function clearInput() {
+            if (elements.inputText.value.trim() && 
+                !confirm('确定要清空输入内容吗？')) {
+                return;
+            }
+            
+            elements.inputText.value = '';
+            elements.inputText.focus();
+        }
+
+        // 滚动到卡密区域
+        function scrollToCode() {
+            elements.codeSection.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+            elements.activationCode.focus();
+        }
+
+        // 前往管理后台
+        function goToAdmin() {
+            window.location.href = 'admin.html';
+        }
+
+        // 退出登录
+        async function logout() {
+            if (!confirm('确定要退出登录吗？')) return;
+            
+            showLoading();
+            
+            try {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('退出登录失败:', error);
+                alert('退出失败，请重试');
+                hideLoading();
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+
+        // 全局错误处理
+        window.addEventListener('error', function(event) {
+            console.error('全局错误:', event.error);
+            alert('系统发生错误，请刷新页面重试');
+        });
+
+        // 防止重复提交
+        let isProcessing = false;
+        const originalConvertText = window.convertText;
+        window.convertText = function() {
+            if (isProcessing) return;
+            isProcessing = true;
+            originalConvertText().finally(() => {
+                isProcessing = false;
+            });
+        };
+
+        const originalRedeemCode = window.redeemCode;
+        window.redeemCode = function() {
+            if (isProcessing) return;
+            isProcessing = true;
+            originalRedeemCode().finally(() => {
+                isProcessing = false;
+            });
+        };
+    </script>
+</body>
+</html>
